@@ -6,6 +6,8 @@
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
+
+
 <body>
     <nav>
         {% if 'logged_in' in session %}
@@ -14,7 +16,7 @@
             <a href="/login">login</a>
         {% endif %}
     </nav>
-    {% block content %}
-    {% endblock %}
+    {%block content%}
+    {%endblock%}
 </body>
 </html>

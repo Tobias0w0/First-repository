@@ -7,22 +7,16 @@ app = Flask(__name__)
 from utils import create_connection, setup
 app.register_blueprint(setup)
 
+#@app.before_request
+#def restrict():
+    #restricted_pages=['list_user','view_user','edit_user','delete_user']
 
-@app.before_request
-def restrict():
-    restricted_pages=['list_user','view_user','edit_user','delete_user']
+    #if 'logged_in' not in session and request.endpoint in restricted_pages:
+        #return redirect('/login')
 
-    if 'logged_in' not in session and request.endpoint in restricted_pages:
-        return redirect('/login')
-
-
-@app.route('/')
-def home():
-    return render_template("index.html")
 
 
 # TODO: Add a '/register' (add_user) route that uses INSERT
-
 @app.route('/register', methods=['GET', 'POST'])
 def add_user():
     if request.method == 'POST':
@@ -59,8 +53,8 @@ def add_user():
 @app.route('/dashboard')
 
 def list_user():
-    if session['role'] !='admin':
-        return abort(404)
+   # if session['role'] !='admin':
+       # return redirect('/')
     with create_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM users")
@@ -73,7 +67,7 @@ def list_user():
 def view_user():
     with create_connection() as connection:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM users WHERE id=%s", request.args['id'])
+            cursor.execute("SELECT * FROM users")
 
             result = cursor.fetchall()
     return render_template('user_view.html', result=result)
@@ -99,8 +93,8 @@ def delete_user():
 def edit_user():
 
     #admin users are allowed, users with the right id are allowed, everyone else sees error 404
-    if session['role'] != 'admin' and str(session['id']) !=request.args['id']:
-        return abort(404)
+    #if session['role'] != 'admin' and str(session['id']) !=request.args['id']:
+        #return abort(404)
 
     if request.method == 'POST':
 
@@ -157,7 +151,7 @@ def login():
             if result:
 
                 session['login'] = True
-                #return redirect('/dashboard')
+                return redirect('/dashboard')
                 return "you are logged in as " + result['first_name']
             else:
                 return redirect('/login')
@@ -170,7 +164,6 @@ def logout():
     return redirect('/')
 
  # email taken
-
 @app.route('/checkmail')
 def check_email():
      with create_connection() as connection:
@@ -181,10 +174,17 @@ def check_email():
           cusor.execute(sql,vaules)
           result = cursor.fecthtone()
 
-if result:
-    return jsonify({'status': 'Error'})
-else:
-    return jsonify({'status': 'ok'})
+
+@app.route('/movies')
+def movies():
+    with create_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM tobheyes_databass.movies")
+            result = cursor.fetchall()
+    return render_template('movies.html', result=result )
+
+
+
 
 
 if __name__ == '__main__':
@@ -196,6 +196,6 @@ if __name__ == '__main__':
     HOST = os.environ.get('SERVER_HOST', 'localhost')
     try:
         PORT = int(os.environ.get('SERVER_PORT', '5555'))
-    except ValueError:
+    except ValueError: 
         PORT = 5555
     app.run(HOST, PORT, debug=True)
