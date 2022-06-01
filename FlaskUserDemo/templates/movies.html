@@ -1,9 +1,11 @@
-
 {% extends '_layout.html' %}
 
 {% block title%} movies {% endblock%}
 {%block content%}
 
+<p>
+    <a href="{{ url_for('movie_id') }}"> List</a>
+</p>
 
 <table id="movie_table">
     <tr>
@@ -16,7 +18,7 @@
 
     {% for row in result %}
     <tr>
-        <td> {{row.title}} </td>
+        <td> {{row.movie}} </td>
         <td> {{row.director}} </td>
         <td> {{row.genre}} </td>
         <td> {{row.year_release}} </td>

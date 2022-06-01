@@ -7,19 +7,26 @@ app = Flask(__name__)
 from utils import create_connection, setup
 app.register_blueprint(setup)
 
-#@app.before_request
-#def restrict():
-    #restricted_pages=['list_user','view_user','edit_user','delete_user']
+@app.before_request
+def restrict():
+    restricted_pages=['list_user','view_user','edit_user','delete_user']
 
-    #if 'logged_in' not in session and request.endpoint in restricted_pages:
-        #return redirect('/login')
+    if 'logged_in' not in session and request.endpoint in restricted_pages:
+        return redirect('/login')
+        
 
+@app.route('/')
+def home():
+    return render_template("index.html")
 
 
 # TODO: Add a '/register' (add_user) route that uses INSERT
 @app.route('/register', methods=['GET', 'POST'])
 def add_user():
     if request.method == 'POST':
+
+        password = request.form['password']
+        encrypted_password = hashlib.sha256(password.encode()).hexdigest()
 
 
         avatar_image = request.files["avatar"]
@@ -35,8 +42,7 @@ def add_user():
                         request.form['last_name'],
                         request.form['email'],
                         encrypted_password,
-                        avatar_filename
-                        )
+                        avatar_filename)
 
                 try:
                     cursor.execute(sql, vaules)
@@ -53,8 +59,8 @@ def add_user():
 @app.route('/dashboard')
 
 def list_user():
-   # if session['role'] !='admin':
-       # return redirect('/')
+    if session['role'] !='admin':
+        return redirect('/')
     with create_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM users")
@@ -112,6 +118,7 @@ def edit_user():
             with connection.cursor() as cursor:
                 sql = """INSERT INTO users (first_name, last_name, email, password, avatar) VALUES (%s, %s, %s, %s)"""
 
+
                 vaules=(request.form['first_name'],
                         request.form['last_name'],
                         request.form['email'],
@@ -138,7 +145,7 @@ def login():
         #encrypt password
         password = request.form['password']
         encrypted_password = hashlib.sha256(password.encode()).hexdigest()
-      
+            
 
         with create_connection() as connection:
             with connection.cursor() as cursor:
@@ -151,7 +158,7 @@ def login():
             if result:
 
                 session['login'] = True
-                return redirect('/dashboard')
+                return redirect('/movies')
                 return "you are logged in as " + result['first_name']
             else:
                 return redirect('/login')
@@ -183,6 +190,14 @@ def movies():
             result = cursor.fetchall()
     return render_template('movies.html', result=result )
 
+
+@app.route('/movie_id')
+def movie_id():
+    with create_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM tobheyes_databass.movie_id")
+            result = cursor.fetchall()
+    return render_template('movieID.html', result=result )
 
 
 
